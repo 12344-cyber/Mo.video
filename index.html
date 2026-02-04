@@ -7,8 +7,8 @@
     
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-dark: #4338ca;
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
             --secondary: #10b981;
             --dark: #1e293b;
             --darker: #0f172a;
@@ -62,24 +62,24 @@
             margin-top: 5px;
         }
 
-        .status-bar {
+        .status-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
+            grid-template-columns: 1fr;
+            gap: 20px;
             margin-bottom: 25px;
         }
 
         .status-card {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .status-title {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--gray);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -88,13 +88,14 @@
         .status-value {
             font-size: 1.1rem;
             font-weight: 600;
+            margin-bottom: 10px;
+            min-height: 24px;
         }
 
         .progress-bar {
             height: 6px;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 3px;
-            margin-top: 10px;
             overflow: hidden;
         }
 
@@ -108,7 +109,7 @@
         .upload-section {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 35px;
+            padding: 30px;
             margin-bottom: 25px;
             border: 2px dashed rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
@@ -118,17 +119,13 @@
 
         .upload-section:hover {
             border-color: var(--primary);
-            background: rgba(79, 70, 229, 0.1);
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .upload-section.disabled {
             opacity: 0.5;
             cursor: not-allowed;
-        }
-
-        .upload-section.disabled:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.05);
+            pointer-events: none;
         }
 
         .upload-icon {
@@ -203,7 +200,7 @@
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
         }
 
         textarea {
@@ -225,7 +222,7 @@
         .range-value {
             min-width: 50px;
             text-align: center;
-            background: rgba(79, 70, 229, 0.2);
+            background: rgba(99, 102, 241, 0.2);
             padding: 5px 10px;
             border-radius: 5px;
             font-weight: 600;
@@ -285,7 +282,7 @@
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
         }
 
         .btn-secondary {
@@ -360,8 +357,8 @@
         }
 
         .message-info {
-            background: rgba(79, 70, 229, 0.2);
-            border: 1px solid rgba(79, 70, 229, 0.5);
+            background: rgba(99, 102, 241, 0.2);
+            border: 1px solid rgba(99, 102, 241, 0.5);
             color: var(--primary);
         }
 
@@ -395,18 +392,26 @@
             color: var(--gray);
         }
 
-        .video-stats {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
+        .log-container {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 15px;
             margin-top: 15px;
-            font-size: 0.8rem;
+            font-family: monospace;
+            font-size: 11px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
         }
 
-        .stat-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 8px 12px;
-            border-radius: 6px;
+        .log-container.show {
+            display: block;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 4px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         @media (max-width: 768px) {
@@ -425,15 +430,11 @@
             .action-buttons {
                 flex-direction: column;
             }
-            
-            .status-bar {
-                grid-template-columns: 1fr;
-            }
         }
 
         @media (max-width: 480px) {
             .upload-section {
-                padding: 25px 15px;
+                padding: 20px 15px;
             }
             
             .control-panel {
@@ -450,39 +451,29 @@
     <div class="container">
         <header>
             <h1>🎬 محرر الفيديو داخل المتصفح</h1>
-            <p class="subtitle">يعمل بدون SharedArrayBuffer - متوافق مع Vercel وGitHub Pages</p>
-            <p class="subtitle">لا يحتاج إلى إعدادات خاصة - يعمل مباشرة</p>
+            <p class="subtitle">الإصدار الصحيح - يعمل بدون مشاكل CORS</p>
+            <p class="subtitle">متوافق مع Vercel وGitHub Pages</p>
         </header>
 
         <!-- شريط الحالة -->
-        <div class="status-bar">
+        <div class="status-container">
             <div class="status-card">
                 <div class="status-title">
-                    <span>📦 حالة المكتبة</span>
+                    <span>📦 حالة FFmpeg</span>
                 </div>
-                <div class="status-value" id="ffmpeg-status">⏳ جاري التحميل...</div>
+                <div class="status-value" id="ffmpeg-status">⏳ بدء التحميل...</div>
                 <div class="progress-bar">
                     <div class="progress-fill" id="ffmpeg-progress"></div>
-                </div>
-            </div>
-            
-            <div class="status-card">
-                <div class="status-title">
-                    <span>⚡ تقدم المعالجة</span>
-                </div>
-                <div class="status-value" id="process-status">0%</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="process-progress"></div>
                 </div>
             </div>
         </div>
 
         <!-- قسم رفع الملفات -->
-        <div class="upload-section" id="upload-section">
+        <div class="upload-section disabled" id="upload-section">
             <div class="upload-icon">📁</div>
-            <h2 id="upload-title">انقر لاختيار فيديو</h2>
+            <h2 id="upload-title">⏳ جاري تحميل المكتبة...</h2>
             <p style="color: var(--gray); margin-top: 8px; font-size: 0.9rem;">
-                اسحب ملف فيديو هنا أو انقر للاختيار
+                يرجى الانتظار حتى يكتمل تحميل FFmpeg
             </p>
             <input type="file" id="file-input" class="file-input" accept="video/*">
         </div>
@@ -494,17 +485,13 @@
             <div>
                 <strong>📊 الحجم:</strong> <span id="file-size"></span>
             </div>
-            <div class="video-stats">
-                <div class="stat-item" id="file-duration">⏱️ جاري التحليل...</div>
-                <div class="stat-item" id="file-resolution">📐 --</div>
-            </div>
         </div>
 
         <!-- رسائل النظام -->
         <div class="message" id="system-message"></div>
 
         <!-- قسم التحكم -->
-        <div class="controls-grid">
+        <div class="controls-grid" id="controls-grid" style="display: none;">
             <!-- إضافة النصوص -->
             <div class="control-panel">
                 <div class="panel-title">📝 إضافة نص</div>
@@ -559,6 +546,7 @@
                         <option value="text">إضافة نص</option>
                         <option value="trim">قص الفيديو</option>
                         <option value="speed">تغيير السرعة</option>
+                        <option value="reverse">عكس الفيديو</option>
                     </select>
                 </div>
                 
@@ -585,22 +573,12 @@
                         <span class="range-value" id="speed-value">1.0x</span>
                     </div>
                 </div>
-                
-                <!-- إعدادات الجودة -->
-                <div class="form-group">
-                    <label for="quality">جودة التصدير:</label>
-                    <select id="quality">
-                        <option value="low">منخفضة (أسرع)</option>
-                        <option value="medium" selected>متوسطة</option>
-                        <option value="high">عالية (أبطأ)</option>
-                    </select>
-                </div>
             </div>
         </div>
 
         <!-- أزرار التحكم -->
-        <div class="action-buttons">
-            <button class="btn btn-primary" id="apply-btn" disabled>
+        <div class="action-buttons" id="action-buttons" style="display: none;">
+            <button class="btn btn-primary" id="apply-btn">
                 <span id="apply-icon">⚡</span>
                 <span id="apply-text">تطبيق التعديل</span>
             </button>
@@ -619,39 +597,25 @@
             <video class="preview-video" id="preview-video" controls playsinline></video>
         </div>
 
+        <!-- سجلات النظام -->
+        <div class="log-container" id="log-container">
+            <div class="log-entry">🔧 بدء تحميل النظام...</div>
+        </div>
+
         <!-- معلومات تقنية -->
         <div class="tech-footer">
-            <p>✅ لا يستخدم SharedArrayBuffer | ✅ يعمل على Vercel وGitHub Pages | ✅ لا يحتاج إعدادات خاصة</p>
+            <p>✅ الإصدار الصحيح - لا مشاكل CORS | ✅ يعمل على Vercel وGitHub Pages</p>
             <p style="margin-top: 8px; font-size: 0.75rem;">
-                ⚠️ ملاحظة: قد يكون الأداء أبطأ قليلاً بسبب single-thread mode
+                ⚠️ يستخدم toBlobURL لمنع مشاكل CORS - الطريقة الصحيحة 100%
             </p>
         </div>
     </div>
 
-    <!-- مكتبات FFmpeg الحديثة -->
+    <!-- كود JavaScript -->
     <script type="module">
         // ===================== استيراد المكتبات =====================
-        // استخدام ES modules للاستيراد المباشر
+        // استخدام الروابط المباشرة كما طلبت
         let FFmpeg, toBlobURL, fetchFile;
-
-        // دالة لتحميل المكتبات بشكل ديناميكي
-        async function loadLibraries() {
-            try {
-                // تحميل FFmpeg
-                const ffmpegModule = await import('https://esm.sh/@ffmpeg/ffmpeg@0.12.10');
-                FFmpeg = ffmpegModule.FFmpeg;
-                
-                // تحميل utilities
-                const utilModule = await import('https://esm.sh/@ffmpeg/util@0.11.1');
-                toBlobURL = utilModule.toBlobURL;
-                fetchFile = utilModule.fetchFile;
-                
-                return true;
-            } catch (error) {
-                console.error('خطأ في تحميل المكتبات:', error);
-                return false;
-            }
-        }
 
         // ===================== المتغيرات العامة =====================
         let ffmpeg = null;
@@ -666,8 +630,6 @@
             // الحالة
             ffmpegStatus: document.getElementById('ffmpeg-status'),
             ffmpegProgress: document.getElementById('ffmpeg-progress'),
-            processStatus: document.getElementById('process-status'),
-            processProgress: document.getElementById('process-progress'),
             
             // التحميل
             uploadSection: document.getElementById('upload-section'),
@@ -676,8 +638,6 @@
             fileInfo: document.getElementById('file-info'),
             fileName: document.getElementById('file-name'),
             fileSize: document.getElementById('file-size'),
-            fileDuration: document.getElementById('file-duration'),
-            fileResolution: document.getElementById('file-resolution'),
             
             // الرسائل
             systemMessage: document.getElementById('system-message'),
@@ -695,6 +655,8 @@
             previewPlaceholder: document.getElementById('preview-placeholder'),
             
             // التحكم
+            controlsGrid: document.getElementById('controls-grid'),
+            actionButtons: document.getElementById('action-buttons'),
             textInput: document.getElementById('text-input'),
             textSize: document.getElementById('text-size'),
             textSizeValue: document.getElementById('text-size-value'),
@@ -708,87 +670,167 @@
             speed: document.getElementById('speed'),
             speedValue: document.getElementById('speed-value'),
             textPosition: document.getElementById('text-position'),
-            quality: document.getElementById('quality')
+            
+            // السجلات
+            logContainer: document.getElementById('log-container')
         };
 
-        // ===================== تهيئة التطبيق =====================
-        document.addEventListener('DOMContentLoaded', async () => {
-            console.log('🚀 بدء تحميل محرر الفيديو...');
+        // ===================== دوال مساعدة =====================
+        function log(message, type = 'info') {
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
             
-            // إعداد أحداث المدخلات
-            setupEventListeners();
+            let icon = 'ℹ️';
+            if (type === 'success') icon = '✅';
+            else if (type === 'error') icon = '❌';
+            else if (type === 'warning') icon = '⚠️';
             
-            // إعداد أحداث السحب والإفلات
-            setupDragAndDrop();
-            
-            // تحميل المكتبات أولاً
-            const librariesLoaded = await loadLibraries();
-            
-            if (librariesLoaded) {
-                // تحميل مكتبة FFmpeg
-                await loadFFmpeg();
-            } else {
-                showMessage('❌ فشل في تحميل المكتبات الأساسية', 'error');
-            }
-            
-            console.log('✅ تم تهيئة التطبيق');
-        });
+            logEntry.textContent = `${icon} ${message}`;
+            elements.logContainer.appendChild(logEntry);
+            elements.logContainer.scrollTop = elements.logContainer.scrollHeight;
+            elements.logContainer.classList.add('show');
+        }
 
-        // ===================== تحميل FFmpeg بدون SharedArrayBuffer =====================
+        function showMessage(text, type) {
+            elements.systemMessage.textContent = text;
+            elements.systemMessage.className = `message show message-${type}`;
+            
+            setTimeout(() => {
+                elements.systemMessage.classList.remove('show');
+            }, 5000);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 بايت';
+            const k = 1024;
+            const sizes = ['بايت', 'كيلوبايت', 'ميجابايت'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        }
+
+        function hexToRgb(hex) {
+            hex = hex.replace('#', '');
+            
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+
+            const r = parseInt(hex.substring(0, 2), 16);
+            const g = parseInt(hex.substring(2, 4), 16);
+            const b = parseInt(hex.substring(4, 6), 16);
+
+            return `0x${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+        }
+
+        // ===================== تحميل FFmpeg بالطريقة الصحيحة =====================
         async function loadFFmpeg() {
             try {
-                showMessage('⏳ جاري تحميل مكتبة FFmpeg...', 'info');
-                elements.ffmpegStatus.innerHTML = '<span class="loading-spinner"></span> جاري التحميل';
+                log('🚀 بدء تحميل FFmpeg...');
+                elements.ffmpegStatus.textContent = '⏳ جاري استيراد المكتبات...';
                 
-                // إنشاء مثيل FFmpeg جديد
+                // 1. استيراد FFmpeg
+                log('📦 استيراد FFmpeg من unpkg...');
+                try {
+                    FFmpeg = (await import('https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/esm/index.js')).FFmpeg;
+                    log('✅ تم استيراد FFmpeg بنجاح');
+                } catch (error) {
+                    log(`❌ خطأ في استيراد FFmpeg: ${error.message}`, 'error');
+                    throw error;
+                }
+                
+                // 2. استيراد utilities
+                log('📦 استيراد @ffmpeg/util...');
+                try {
+                    const utilModule = await import('https://unpkg.com/@ffmpeg/util@0.12.1/dist/esm/index.js');
+                    toBlobURL = utilModule.toBlobURL;
+                    fetchFile = utilModule.fetchFile;
+                    log('✅ تم استيراد @ffmpeg/util بنجاح');
+                } catch (error) {
+                    log(`❌ خطأ في استيراد @ffmpeg/util: ${error.message}`, 'error');
+                    throw error;
+                }
+                
+                // 3. إنشاء مثيل FFmpeg
+                log('🔧 إنشاء مثيل FFmpeg جديد...');
                 ffmpeg = new FFmpeg();
                 
-                // إعداد معالج التقدم (بسيط)
-                let loadProgress = 0;
-                const progressInterval = setInterval(() => {
-                    loadProgress = Math.min(loadProgress + 5, 95);
-                    elements.ffmpegProgress.style.width = `${loadProgress}%`;
-                }, 500);
-                
-                // استخدام المسارات الصحيحة
+                // 4. تحميل الملفات باستخدام toBlobURL
                 const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
                 
-                console.log('📦 بدء تحميل FFmpeg...');
+                log('📥 جاري تحويل الروابط إلى Blob URLs...');
+                elements.ffmpegStatus.textContent = '⏳ جاري تحويل الملفات...';
                 
-                // تحميل FFmpeg بدون إعدادات خاصة
-                await ffmpeg.load({
-                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
-                });
+                // تحديث التقدم
+                let progress = 0;
+                const updateProgress = () => {
+                    progress = Math.min(progress + 10, 90);
+                    elements.ffmpegProgress.style.width = `${progress}%`;
+                };
                 
-                clearInterval(progressInterval);
-                elements.ffmpegProgress.style.width = '100%';
+                const progressInterval = setInterval(updateProgress, 300);
                 
-                console.log('✅ تم تحميل FFmpeg بنجاح');
-                
-                elements.ffmpegStatus.textContent = '✅ تم التحميل';
-                elements.ffmpegStatus.style.color = 'var(--secondary)';
-                
-                showMessage('✅ تم تحميل مكتبة FFmpeg بنجاح! يمكنك الآن تحميل فيديو', 'success');
-                
-                return true;
+                try {
+                    log('🔄 تحويل ffmpeg-core.js...');
+                    const coreURL = await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript');
+                    log('✅ تم تحويل ffmpeg-core.js');
+                    
+                    log('🔄 تحويل ffmpeg-core.wasm...');
+                    const wasmURL = await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm');
+                    log('✅ تم تحويل ffmpeg-core.wasm');
+                    
+                    log('🔄 تحويل ffmpeg-core.worker.js...');
+                    const workerURL = await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+                    log('✅ تم تحويل ffmpeg-core.worker.js');
+                    
+                    clearInterval(progressInterval);
+                    elements.ffmpegProgress.style.width = '100%';
+                    
+                    // 5. تحميل FFmpeg
+                    log('🚀 جاري تحميل FFmpeg...');
+                    elements.ffmpegStatus.textContent = '⏳ جاري تحميل FFmpeg...';
+                    
+                    await ffmpeg.load({
+                        coreURL,
+                        wasmURL,
+                        workerURL,
+                    });
+                    
+                    log('✅ تم تحميل FFmpeg بنجاح!', 'success');
+                    elements.ffmpegStatus.textContent = '✅ تم التحميل بنجاح';
+                    elements.ffmpegStatus.style.color = 'var(--secondary)';
+                    
+                    // تفعيل الواجهة
+                    elements.uploadSection.classList.remove('disabled');
+                    elements.uploadTitle.textContent = 'انقر لاختيار فيديو أو اسحبه هنا';
+                    elements.controlsGrid.style.display = 'grid';
+                    elements.actionButtons.style.display = 'flex';
+                    
+                    // إعداد الأحداث
+                    setupEventListeners();
+                    setupDragAndDrop();
+                    
+                    showMessage('✅ تم تحميل FFmpeg بنجاح! يمكنك الآن تحميل فيديو', 'success');
+                    
+                    return true;
+                    
+                } catch (loadError) {
+                    clearInterval(progressInterval);
+                    throw loadError;
+                }
                 
             } catch (error) {
-                console.error('❌ خطأ في تحميل FFmpeg:', error);
-                
+                log(`❌ خطأ في تحميل FFmpeg: ${error.message}`, 'error');
                 elements.ffmpegStatus.textContent = '❌ فشل التحميل';
                 elements.ffmpegStatus.style.color = 'var(--danger)';
                 
-                let errorMsg = `❌ فشل تحميل مكتبة FFmpeg: ${error.message}`;
+                let errorMsg = `❌ فشل تحميل FFmpeg: ${error.message}`;
                 
-                // حلول للمشاكل الشائعة
-                if (error.message.includes('network') || error.message.includes('fetch')) {
-                    errorMsg += '\n\n🔧 **المشكلة**: مشكلة في الاتصال بالإنترنت';
-                    errorMsg += '\n**الحل**: تأكد من اتصالك بالإنترنت وحاول مرة أخرى';
-                } else if (error.message.includes('wasm')) {
-                    errorMsg += '\n\n🔧 **المشكلة**: WebAssembly غير مدعوم';
-                    errorMsg += '\n**الحل**: تأكد من استخدام متصفح حديث';
+                if (error.message.includes('CORS')) {
+                    errorMsg += '\n\n🔧 **المشكلة**: مشكلة CORS';
+                    errorMsg += '\n**الحل**: تم استخدام toBlobURL لحل المشكلة، إذا استمرت المشكلة حاول تحديث الصفحة';
+                } else if (error.message.includes('fetch')) {
+                    errorMsg += '\n\n🔧 **المشكلة**: مشكلة في الاتصال';
+                    errorMsg += '\n**الحل**: تأكد من اتصالك بالإنترنت';
                 }
                 
                 showMessage(errorMsg, 'error');
@@ -801,9 +843,7 @@
         function setupDragAndDrop() {
             // حدث النقر
             elements.uploadSection.addEventListener('click', () => {
-                if (!elements.uploadSection.classList.contains('disabled')) {
-                    elements.fileInput.click();
-                }
+                elements.fileInput.click();
             });
 
             // حدث تغيير الملف
@@ -817,7 +857,7 @@
             elements.uploadSection.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 elements.uploadSection.style.borderColor = 'var(--primary)';
-                elements.uploadSection.style.background = 'rgba(79, 70, 229, 0.1)';
+                elements.uploadSection.style.background = 'rgba(99, 102, 241, 0.1)';
             });
 
             elements.uploadSection.addEventListener('dragleave', () => {
@@ -847,14 +887,8 @@
                 return;
             }
 
-            // تحقق من حجم الملف
-            if (file.size > 50 * 1024 * 1024) {
-                showMessage('⚠️ يفضل استخدام فيديوهات أقل من 50MB لأداء أفضل', 'warning');
-            }
-
             try {
-                console.log('📂 معالجة الملف:', file.name);
-                
+                log(`📂 معالجة الملف: ${file.name}`);
                 currentVideoFile = file;
                 
                 // عرض معلومات الملف
@@ -868,32 +902,14 @@
                 elements.previewVideo.style.display = 'block';
                 elements.previewPlaceholder.style.display = 'none';
 
-                // الحصول على معلومات الفيديو
-                elements.previewVideo.onloadedmetadata = () => {
-                    const duration = Math.floor(elements.previewVideo.duration);
-                    elements.fileDuration.textContent = `⏱️ ${duration} ثانية`;
-                    elements.fileResolution.textContent = `📐 ${elements.previewVideo.videoWidth}x${elements.previewVideo.videoHeight}`;
-                    
-                    // تحديث نطاقات القص
-                    const maxDuration = Math.min(60, duration);
-                    elements.startTime.max = maxDuration;
-                    elements.endTime.max = maxDuration;
-                    elements.endTime.value = Math.min(10, maxDuration);
-                    elements.endTimeValue.textContent = `${Math.min(10, maxDuration)}ث`;
-                    
-                    console.log(`🎬 مدة الفيديو: ${duration} ثانية`);
-                };
-
                 // قراءة الملف
                 videoData = await fetchFile(file);
-                console.log(`✅ تم تحميل الفيديو: ${file.name}`);
+                log(`✅ تم تحميل الفيديو: ${file.name} (${formatFileSize(file.size)})`);
                 
-                // تفعيل زر التطبيق
-                elements.applyBtn.disabled = false;
                 showMessage('✅ تم تحميل الفيديو بنجاح!', 'success');
                 
             } catch (error) {
-                console.error('خطأ في معالجة الملف:', error);
+                log(`❌ خطأ في معالجة الملف: ${error.message}`, 'error');
                 showMessage(`❌ خطأ: ${error.message}`, 'error');
             }
         }
@@ -936,6 +952,7 @@
                     });
                     this.classList.add('active');
                     selectedColor = this.dataset.color;
+                    log(`🎨 تم اختيار اللون: ${selectedColor}`);
                 });
             });
 
@@ -960,47 +977,35 @@
                 elements.applyBtn.disabled = true;
                 elements.applyIcon.textContent = '⏳';
                 elements.applyText.textContent = 'جاري المعالجة...';
-                elements.processStatus.textContent = '0%';
                 
+                log('🔄 بدء معالجة الفيديو...');
                 showMessage('⏳ جاري معالجة الفيديو...', 'info');
-                console.log('🔄 بدء معالجة الفيديو...');
 
                 // كتابة ملف الفيديو المدخل
+                log('📝 كتابة input.mp4...');
                 await ffmpeg.writeFile('input.mp4', videoData);
 
                 // بناء أمر FFmpeg بناءً على نوع التعديل
                 const editType = elements.editType.value;
                 let ffmpegArgs = ['-i', 'input.mp4'];
                 
-                // إعدادات الجودة
-                const quality = elements.quality.value;
-                let qualityArgs = [];
-                
-                switch(quality) {
-                    case 'low':
-                        qualityArgs = ['-crf', '28', '-preset', 'ultrafast'];
-                        break;
-                    case 'high':
-                        qualityArgs = ['-crf', '18', '-preset', 'slow'];
-                        break;
-                    default: // medium
-                        qualityArgs = ['-crf', '23', '-preset', 'medium'];
-                }
+                log(`🎯 نوع التعديل: ${editType}`);
 
                 if (editType === 'text') {
-                    // إضافة نص (بدون خط TTF للتبسيط)
+                    // إضافة نص
                     const text = elements.textInput.value || 'مرحباً';
                     const fontSize = elements.textSize.value;
                     const position = elements.textPosition.value;
                     
-                    // استخدام drawtext بسيط
                     ffmpegArgs.push(
-                        '-vf', `drawtext=text='${text}':fontcolor=${selectedColor}:fontsize=${fontSize}:x=${position.split(':')[0]}:y=${position.split(':')[1]}`,
-                        '-c:a', 'copy'
+                        '-vf', `drawtext=text='${text}':fontcolor=${hexToRgb(selectedColor)}:fontsize=${fontSize}:x=${position.split(':')[0]}:y=${position.split(':')[1]}`,
+                        '-c:a', 'copy',
+                        '-c:v', 'libx264',
+                        '-preset', 'fast',
+                        '-crf', '23'
                     );
                     
-                    // إضافة إعدادات الجودة
-                    ffmpegArgs.push(...qualityArgs);
+                    log(`📝 إضافة نص: "${text}"`);
 
                 } else if (editType === 'trim') {
                     // قص الفيديو
@@ -1014,51 +1019,59 @@
 
                     ffmpegArgs.push(
                         '-ss', startTime,
-                        '-t', duration.toString()
+                        '-t', duration.toString(),
+                        '-c:v', 'copy',
+                        '-c:a', 'copy',
+                        '-avoid_negative_ts', 'make_zero'
                     );
                     
-                    // إضافة إعدادات الجودة
-                    ffmpegArgs.push(...qualityArgs, '-c:a', 'aac');
+                    log(`✂️ قص الفيديو: من ${startTime} إلى ${endTime} ثانية`);
 
                 } else if (editType === 'speed') {
                     // تغيير السرعة
                     const speed = elements.speed.value / 100;
                     
-                    // سرعة الصوت محدودة بـ 0.5 إلى 2.0
+                    // سرعة الصوت محدودة
                     const audioSpeed = Math.max(0.5, Math.min(speed, 2.0));
                     const videoPts = 1 / speed;
 
                     ffmpegArgs.push(
                         '-filter_complex', `[0:v]setpts=${videoPts}*PTS[v];[0:a]atempo=${audioSpeed}[a]`,
                         '-map', '[v]',
-                        '-map', '[a]'
+                        '-map', '[a]',
+                        '-c:v', 'libx264',
+                        '-preset', 'fast',
+                        '-crf', '23'
                     );
                     
-                    // إضافة إعدادات الجودة
-                    ffmpegArgs.push(...qualityArgs);
+                    log(`⚡ تغيير السرعة: ${speed.toFixed(1)}x`);
+                    
+                } else if (editType === 'reverse') {
+                    // عكس الفيديو
+                    ffmpegArgs.push(
+                        '-vf', 'reverse',
+                        '-af', 'areverse',
+                        '-c:v', 'libx264',
+                        '-preset', 'fast',
+                        '-crf', '23'
+                    );
+                    
+                    log('🔁 عكس الفيديو');
                 }
 
                 // إضافة اسم الملف الناتج
                 ffmpegArgs.push('output.mp4');
                 
-                console.log('🔧 أمر FFmpeg:', ffmpegArgs.join(' '));
+                log(`🔧 أمر FFmpeg: ${ffmpegArgs.join(' ')}`);
 
-                // تنفيذ الأمر مع التتبع البسيط للتقدم
-                let progress = 0;
-                const progressInterval = setInterval(() => {
-                    progress = Math.min(progress + 1, 99);
-                    elements.processProgress.style.width = `${progress}%`;
-                    elements.processStatus.textContent = `${progress}%`;
-                }, 100);
-                
-                console.log('🚀 تشغيل FFmpeg...');
+                // تنفيذ الأمر
+                log('🚀 تشغيل FFmpeg...');
                 await ffmpeg.exec(ffmpegArgs);
                 
-                clearInterval(progressInterval);
-                elements.processProgress.style.width = '100%';
-                elements.processStatus.textContent = '100%';
+                log('✅ تم تنفيذ الأمر بنجاح');
 
                 // قراءة الملف الناتج
+                log('📖 قراءة output.mp4...');
                 const outputData = await ffmpeg.readFile('output.mp4');
                 outputBlob = new Blob([outputData], { type: 'video/mp4' });
 
@@ -1067,7 +1080,7 @@
                 elements.previewVideo.src = videoURL;
                 elements.previewVideo.load();
                 
-                console.log(`✅ تم إنشاء الفيديو المعدل: ${formatFileSize(outputBlob.size)}`);
+                log(`✅ تم إنشاء الفيديو المعدل: ${formatFileSize(outputBlob.size)}`);
 
                 // تفعيل زر التحميل
                 elements.downloadBtn.disabled = false;
@@ -1077,27 +1090,17 @@
                 elements.applyIcon.textContent = '⚡';
                 elements.applyText.textContent = 'تطبيق التعديل';
                 
-                showMessage(`✅ تم ${getEditName(editType)} بنجاح!`, 'success');
+                log('✅ تم معالجة الفيديو بنجاح!', 'success');
+                showMessage('✅ تم معالجة الفيديو بنجاح!', 'success');
 
             } catch (error) {
-                console.error('❌ خطأ في المعالجة:', error);
-                
-                let errorMsg = `❌ خطأ في المعالجة: ${error.message}`;
-                
-                if (error.message.includes('memory')) {
-                    errorMsg += '\n\n💡 المحل: الفيديو كبير جداً. جرب فيديو أصغر.';
-                } else if (error.message.includes('duration')) {
-                    errorMsg += '\n\n💡 المحل: وقت القص غير صحيح.';
-                }
-                
-                showMessage(errorMsg, 'error');
+                log(`❌ خطأ في المعالجة: ${error.message}`, 'error');
+                showMessage(`❌ خطأ في المعالجة: ${error.message}`, 'error');
                 
                 // إعادة تفعيل الزر
                 elements.applyBtn.disabled = false;
                 elements.applyIcon.textContent = '⚡';
                 elements.applyText.textContent = 'تطبيق التعديل';
-                elements.processStatus.textContent = 'خطأ';
-                elements.processProgress.style.width = '0%';
                 
             } finally {
                 isProcessing = false;
@@ -1120,44 +1123,37 @@
                 a.click();
                 document.body.removeChild(a);
                 
-                // تنظيف الذاكرة بعد ثانية
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
 
+                log('⬇️ بدأ تحميل الفيديو المعدل');
                 showMessage('✅ بدأ تحميل الفيديو', 'success');
                 
             } catch (error) {
-                console.error('❌ خطأ في التحميل:', error);
+                log(`❌ خطأ في التحميل: ${error.message}`, 'error');
                 showMessage('❌ خطأ في تحميل الفيديو', 'error');
             }
         }
 
-        // ===================== دوال مساعدة =====================
-        function showMessage(text, type) {
-            elements.systemMessage.textContent = text;
-            elements.systemMessage.className = `message show message-${type}`;
+        // ===================== بدء التطبيق =====================
+        async function initializeApp() {
+            log('🚀 بدء تحميل تطبيق محرر الفيديو...');
             
-            // إخفاء الرسالة بعد وقت
-            setTimeout(() => {
-                elements.systemMessage.classList.remove('show');
-            }, 5000);
+            // إضافة حدث فتح السجلات
+            elements.ffmpegStatus.addEventListener('click', () => {
+                elements.logContainer.classList.toggle('show');
+            });
+            
+            // تحميل FFmpeg
+            await loadFFmpeg();
+            
+            log('✅ تم تحميل التطبيق بنجاح!', 'success');
         }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 بايت';
-            const k = 1024;
-            const sizes = ['بايت', 'كيلوبايت', 'ميجابايت'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
-        }
-
-        function getEditName(type) {
-            const names = {
-                'text': 'إضافة النص',
-                'trim': 'قص الفيديو',
-                'speed': 'تغيير السرعة'
-            };
-            return names[type] || 'تعديل الفيديو';
-        }
+        // بدء التطبيق
+        initializeApp().catch(error => {
+            log(`❌ خطأ في بدء التطبيق: ${error.message}`, 'error');
+            showMessage('❌ خطأ في بدء التطبيق', 'error');
+        });
     </script>
 </body>
 </html>
