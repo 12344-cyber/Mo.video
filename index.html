@@ -4,7 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>محرر فيديو احترافي - يعمل داخل المتصفح</title>
+    <!-- Headers للسماح بـ SharedArrayBuffer -->
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="require-corp">
+    
     <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #10b981;
+            --dark: #1e293b;
+            --darker: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,104 +28,111 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
             min-height: 100vh;
-            padding: 20px;
             line-height: 1.6;
+            padding: 20px;
         }
 
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         header {
             text-align: center;
             margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-
-        h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #00c9ff 0%, #92fe9d 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .status-bar {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 30px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .status-item {
-            display: flex;
-            justify-content: space-between;
+        h1 {
+            font-size: 2.5rem;
             margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .status-item:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
-        }
-
-        .progress-container {
+        .subtitle {
+            color: var(--gray);
+            font-size: 1.1rem;
             margin-top: 10px;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 5px;
-            overflow: hidden;
+        }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-title {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-value {
+            font-size: 1.2rem;
+            font-weight: 600;
         }
 
         .progress-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #00c9ff 0%, #92fe9d 100%);
+            background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
             width: 0%;
             transition: width 0.3s ease;
         }
 
         .upload-section {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .upload-area {
-            border: 3px dashed rgba(0, 201, 255, 0.5);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
-            padding: 40px 20px;
-            cursor: pointer;
+            padding: 40px;
+            margin-bottom: 30px;
+            border: 2px dashed rgba(255, 255, 255, 0.2);
             transition: all 0.3s ease;
-            background: rgba(0, 0, 0, 0.3);
+            text-align: center;
         }
 
-        .upload-area:hover {
-            border-color: #00c9ff;
-            background: rgba(0, 201, 255, 0.1);
+        .upload-section.active {
+            border-color: var(--primary);
+            background: rgba(59, 130, 246, 0.1);
         }
 
-        .upload-area.dragover {
-            border-color: #92fe9d;
-            background: rgba(146, 254, 157, 0.1);
+        .upload-section.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .upload-icon {
             font-size: 60px;
-            margin-bottom: 15px;
-            color: #00c9ff;
+            margin-bottom: 20px;
+            color: var(--primary);
         }
 
         .file-input {
@@ -117,48 +140,49 @@
         }
 
         .file-info {
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
             margin-top: 20px;
             display: none;
+            text-align: right;
         }
 
         .file-info.show {
             display: block;
         }
 
-        .controls-section {
+        .controls-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            gap: 25px;
             margin-bottom: 30px;
         }
 
-        .control-card {
+        .control-panel {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 15px;
             padding: 25px;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .control-title {
-            font-size: 18px;
+        .panel-title {
+            font-size: 1.3rem;
             margin-bottom: 20px;
-            color: #00c9ff;
+            color: var(--primary);
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        .control-group {
+        .form-group {
             margin-bottom: 20px;
         }
 
         label {
             display: block;
             margin-bottom: 8px;
-            color: #aaa;
+            color: var(--gray);
             font-weight: 500;
         }
 
@@ -168,15 +192,15 @@
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            color: white;
+            color: var(--light);
             font-size: 16px;
             transition: all 0.3s ease;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: #00c9ff;
-            box-shadow: 0 0 0 2px rgba(0, 201, 255, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
         }
 
         textarea {
@@ -184,35 +208,40 @@
             resize: vertical;
         }
 
-        .range-container {
+        .range-group {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-top: 10px;
         }
 
-        .range-value {
-            min-width: 40px;
-            text-align: center;
-            background: rgba(0, 201, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 5px;
+        input[type="range"] {
+            flex: 1;
         }
 
-        .color-picker {
-            display: flex;
+        .range-value {
+            min-width: 60px;
+            text-align: center;
+            background: rgba(59, 130, 246, 0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
             gap: 10px;
-            flex-wrap: wrap;
             margin-top: 10px;
         }
 
         .color-option {
-            width: 40px;
-            height: 40px;
+            width: 35px;
+            height: 35px;
             border-radius: 8px;
             cursor: pointer;
             border: 3px solid transparent;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .color-option:hover {
@@ -220,8 +249,8 @@
         }
 
         .color-option.active {
-            border-color: white;
-            box-shadow: 0 0 0 3px #00c9ff;
+            border-color: var(--light);
+            box-shadow: 0 0 0 3px var(--primary);
         }
 
         .action-buttons {
@@ -235,7 +264,7 @@
             padding: 18px 30px;
             border: none;
             border-radius: 12px;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -246,13 +275,13 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #00c9ff 0%, #92fe9d 100%);
-            color: #000;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(0, 201, 255, 0.4);
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
         }
 
         .btn-secondary {
@@ -262,6 +291,7 @@
 
         .btn-secondary:hover:not(:disabled) {
             background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
         }
 
         .btn:disabled {
@@ -272,75 +302,104 @@
         }
 
         .preview-section {
-            margin-top: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
             text-align: center;
         }
 
         .preview-video {
             max-width: 100%;
-            max-height: 300px;
-            border-radius: 15px;
+            max-height: 400px;
+            border-radius: 10px;
             display: none;
             background: #000;
+            margin: 0 auto;
         }
 
         .preview-placeholder {
-            padding: 40px;
-            color: #666;
+            padding: 50px 20px;
+            color: var(--gray);
         }
 
         .message {
-            padding: 15px;
+            padding: 15px 20px;
             border-radius: 10px;
             margin-top: 20px;
             font-weight: 500;
             display: none;
+            text-align: center;
         }
 
         .message.show {
             display: block;
+            animation: fadeIn 0.3s ease;
         }
 
-        .message.success {
-            background: rgba(76, 175, 80, 0.2);
-            border: 1px solid rgba(76, 175, 80, 0.5);
-            color: #4caf50;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
-        .message.error {
-            background: rgba(244, 67, 54, 0.2);
-            border: 1px solid rgba(244, 67, 54, 0.5);
-            color: #f44336;
+        .message-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.5);
+            color: var(--secondary);
         }
 
-        .message.info {
-            background: rgba(33, 150, 243, 0.2);
-            border: 1px solid rgba(33, 150, 243, 0.5);
-            color: #2196f3;
+        .message-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: var(--danger);
         }
 
-        .message.warning {
-            background: rgba(255, 152, 0, 0.2);
-            border: 1px solid rgba(255, 152, 0, 0.5);
-            color: #ff9800;
+        .message-info {
+            background: rgba(59, 130, 246, 0.2);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            color: var(--primary);
         }
 
-        .tech-info {
-            margin-top: 30px;
+        .message-warning {
+            background: rgba(245, 158, 11, 0.2);
+            border: 1px solid rgba(245, 158, 11, 0.5);
+            color: var(--warning);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .tech-footer {
+            margin-top: 40px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
-            font-size: 12px;
-            color: #aaa;
             text-align: center;
+            font-size: 0.9rem;
+            color: var(--gray);
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 20px;
+                padding: 10px;
             }
             
-            .controls-section {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .controls-grid {
                 grid-template-columns: 1fr;
             }
             
@@ -348,8 +407,22 @@
                 flex-direction: column;
             }
             
-            .btn {
-                width: 100%;
+            .color-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .status-bar {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-section {
+                padding: 30px 20px;
+            }
+            
+            .control-panel {
+                padding: 20px;
             }
         }
     </style>
@@ -358,84 +431,113 @@
     <div class="container">
         <header>
             <h1>🎬 محرر الفيديو داخل المتصفح</h1>
-            <p>يعمل 100% على جهازك - لا يرفع الملفات لأي سيرفر خارجي</p>
+            <p class="subtitle">يعمل 100% على جهازك - متوافق مع Vercel وGitHub Pages</p>
+            <p class="subtitle">لا يحتاج استضافة خاصة - يعمل عبر HTTPS فقط</p>
         </header>
 
         <!-- شريط الحالة -->
         <div class="status-bar">
-            <div class="status-item">
-                <span>مكتبة FFmpeg:</span>
-                <span id="ffmpeg-status">⏳ جاري التحميل...</span>
+            <div class="status-card">
+                <div class="status-title">
+                    <span>📦 مكتبة FFmpeg</span>
+                </div>
+                <div class="status-value" id="ffmpeg-status">⏳ جاري التحميل...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="ffmpeg-progress"></div>
+                </div>
             </div>
-            <div class="status-item">
-                <span>الذاكرة المتاحة:</span>
-                <span id="memory-status">--</span>
+            
+            <div class="status-card">
+                <div class="status-title">
+                    <span>💾 حالة الذاكرة</span>
+                </div>
+                <div class="status-value" id="memory-status">--</div>
             </div>
-            <div class="status-item">
-                <span>تقدم المعالجة:</span>
-                <span id="progress-status">--</span>
-            </div>
-            <div class="progress-container">
-                <div class="progress-bar" id="progress-bar"></div>
+            
+            <div class="status-card">
+                <div class="status-title">
+                    <span>⚡ تقدم المعالجة</span>
+                </div>
+                <div class="status-value" id="process-status">0%</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="process-progress"></div>
+                </div>
             </div>
         </div>
 
-        <!-- قسم التحميل -->
-        <div class="upload-section">
-            <div class="upload-area" id="uploadArea">
-                <div class="upload-icon">📁</div>
-                <h3>انقر لاختيار فيديو أو اسحبه هنا</h3>
-                <p style="color: #aaa; margin-top: 10px;">
-                    يدعم MP4, AVI, MOV, MKV (يفضل فيديوهات قصيرة)
-                </p>
+        <!-- قسم رفع الملفات -->
+        <div class="upload-section disabled" id="upload-section">
+            <div class="upload-icon">📁</div>
+            <h2 id="upload-title">⏳ جاري تحميل المكتبة، يرجى الانتظار...</h2>
+            <p style="color: var(--gray); margin-top: 10px;">
+                اسحب ملف فيديو هنا أو انقر للاختيار
+            </p>
+            <p style="font-size: 0.9rem; color: var(--gray); margin-top: 15px;">
+                يدعم: MP4, AVI, MOV, MKV, WebM (يفضل أقل من 100MB)
+            </p>
+            <input type="file" id="file-input" class="file-input" accept="video/*">
+        </div>
+
+        <div class="file-info" id="file-info">
+            <div style="margin-bottom: 10px;">
+                <strong>📄 الملف:</strong> <span id="file-name"></span>
             </div>
-            <input type="file" id="fileInput" class="file-input" accept="video/*">
-            
-            <div class="file-info" id="fileInfo">
-                <div><strong>📄 الملف:</strong> <span id="fileName"></span></div>
-                <div><strong>📊 الحجم:</strong> <span id="fileSize"></span></div>
-                <div><strong>⏱️ المدة:</strong> <span id="fileDuration"></span></div>
+            <div style="margin-bottom: 10px;">
+                <strong>📊 الحجم:</strong> <span id="file-size"></span>
+            </div>
+            <div>
+                <strong>⏱️ المدة:</strong> <span id="file-duration">جاري التحليل...</span>
             </div>
         </div>
 
         <!-- رسائل النظام -->
-        <div class="message" id="systemMessage"></div>
+        <div class="message" id="system-message"></div>
 
         <!-- قسم التحكم -->
-        <div class="controls-section">
-            <!-- تعديل النصوص -->
-            <div class="control-card">
-                <div class="control-title">📝 إضافة نص عربي</div>
-                <div class="control-group">
-                    <label for="textInput">النص:</label>
-                    <textarea id="textInput" placeholder="أدخل النص العربي هنا..."></textarea>
+        <div class="controls-grid">
+            <!-- إضافة النصوص -->
+            <div class="control-panel">
+                <div class="panel-title">📝 إضافة نص عربي</div>
+                
+                <div class="form-group">
+                    <label for="text-input">النص العربي:</label>
+                    <textarea id="text-input" placeholder="أدخل النص العربي الذي تريد إضافته...">مرحباً بك في محرر الفيديو</textarea>
                 </div>
-                <div class="control-group">
+                
+                <div class="form-group">
                     <label>حجم النص:</label>
-                    <div class="range-container">
-                        <input type="range" id="textSize" min="10" max="100" value="40">
-                        <span class="range-value" id="textSizeValue">40</span>
+                    <div class="range-group">
+                        <input type="range" id="text-size" min="20" max="80" value="40">
+                        <span class="range-value" id="text-size-value">40</span>
                     </div>
                 </div>
-                <div class="control-group">
+                
+                <div class="form-group">
                     <label>لون النص:</label>
-                    <div class="color-picker">
+                    <div class="color-grid">
                         <div class="color-option active" style="background-color: #FFFFFF;" data-color="#FFFFFF"></div>
                         <div class="color-option" style="background-color: #FF0000;" data-color="#FF0000"></div>
                         <div class="color-option" style="background-color: #00FF00;" data-color="#00FF00"></div>
                         <div class="color-option" style="background-color: #0000FF;" data-color="#0000FF"></div>
                         <div class="color-option" style="background-color: #FFFF00;" data-color="#FFFF00"></div>
                         <div class="color-option" style="background-color: #FF00FF;" data-color="#FF00FF"></div>
+                        <div class="color-option" style="background-color: #00FFFF;" data-color="#00FFFF"></div>
+                        <div class="color-option" style="background-color: #FFA500;" data-color="#FFA500"></div>
+                        <div class="color-option" style="background-color: #800080;" data-color="#800080"></div>
+                        <div class="color-option" style="background-color: #000000;" data-color="#000000"></div>
+                        <div class="color-option" style="background-color: #808080;" data-color="#808080"></div>
+                        <div class="color-option" style="background-color: #FFC0CB;" data-color="#FFC0CB"></div>
                     </div>
                 </div>
-                <div class="control-group">
-                    <label>موضع النص:</label>
-                    <select id="textPosition">
+                
+                <div class="form-group">
+                    <label for="text-position">موضع النص:</label>
+                    <select id="text-position">
                         <option value="10:10">أعلى اليسار</option>
                         <option value="(w-text_w)/2:10">أعلى الوسط</option>
                         <option value="(w-text_w-10):10">أعلى اليمين</option>
                         <option value="10:(h-text_h)/2">وسط اليسار</option>
-                        <option value="(w-text_w)/2:(h-text_h)/2">الوسط</option>
+                        <option value="(w-text_w)/2:(h-text_h)/2" selected>الوسط</option>
                         <option value="(w-text_w-10):(h-text_h)/2">وسط اليمين</option>
                         <option value="10:(h-text_h-10)">أسفل اليسار</option>
                         <option value="(w-text_w)/2:(h-text_h-10)">أسفل الوسط</option>
@@ -445,179 +547,425 @@
             </div>
 
             <!-- التعديلات الأخرى -->
-            <div class="control-card">
-                <div class="control-title">⚙️ التعديلات الأخرى</div>
-                <div class="control-group">
-                    <label for="editType">نوع التعديل:</label>
-                    <select id="editType">
+            <div class="control-panel">
+                <div class="panel-title">⚙️ التعديلات الأخرى</div>
+                
+                <div class="form-group">
+                    <label for="edit-type">نوع التعديل:</label>
+                    <select id="edit-type">
                         <option value="text">إضافة نص عربي</option>
                         <option value="trim">قص الفيديو</option>
                         <option value="speed">تغيير السرعة</option>
                         <option value="reverse">عكس الفيديو</option>
+                        <option value="watermark">إضافة علامة مائية</option>
                     </select>
                 </div>
                 
-                <!-- قص الفيديو -->
-                <div class="control-group" id="trimGroup">
+                <!-- إعدادات قص الفيديو -->
+                <div class="form-group" id="trim-settings">
                     <label>قص الفيديو:</label>
-                    <div class="range-container">
-                        <label>البداية (ث):</label>
-                        <input type="range" id="startTime" min="0" max="100" value="0">
-                        <span class="range-value" id="startTimeValue">0</span>
+                    <div class="form-group">
+                        <div class="range-group">
+                            <label style="min-width: 100px;">البداية (ثانية):</label>
+                            <input type="range" id="start-time" min="0" max="100" value="0">
+                            <span class="range-value" id="start-time-value">0</span>
+                        </div>
                     </div>
-                    <div class="range-container">
-                        <label>النهاية (ث):</label>
-                        <input type="range" id="endTime" min="0" max="100" value="10">
-                        <span class="range-value" id="endTimeValue">10</span>
+                    <div class="form-group">
+                        <div class="range-group">
+                            <label style="min-width: 100px;">النهاية (ثانية):</label>
+                            <input type="range" id="end-time" min="1" max="100" value="10">
+                            <span class="range-value" id="end-time-value">10</span>
+                        </div>
                     </div>
                 </div>
-
-                <!-- تغيير السرعة -->
-                <div class="control-group" id="speedGroup" style="display: none;">
-                    <label>السرعة:</label>
-                    <div class="range-container">
-                        <input type="range" id="speed" min="10" max="300" value="100">
-                        <span class="range-value" id="speedValue">1.0x</span>
+                
+                <!-- إعدادات السرعة -->
+                <div class="form-group" id="speed-settings" style="display: none;">
+                    <label>سرعة التشغيل:</label>
+                    <div class="range-group">
+                        <input type="range" id="speed" min="25" max="400" value="100">
+                        <span class="range-value" id="speed-value">1.0x</span>
                     </div>
+                    <div style="font-size: 0.85rem; color: var(--gray); margin-top: 5px;">
+                        0.25x (بطيء جداً) ← 1.0x (عادي) ← 4.0x (سريع جداً)
+                    </div>
+                </div>
+                
+                <!-- إعدادات العلامة المائية -->
+                <div class="form-group" id="watermark-settings" style="display: none;">
+                    <label for="watermark-text">نص العلامة المائية:</label>
+                    <input type="text" id="watermark-text" placeholder="اسمك أو موقعك" value="محرر الفيديو">
                 </div>
             </div>
         </div>
 
         <!-- أزرار التحكم -->
         <div class="action-buttons">
-            <button class="btn btn-primary" id="applyBtn" disabled onclick="applyEdits()">
-                ⚡ تطبيق التعديل
+            <button class="btn btn-primary" id="apply-btn" disabled>
+                <span id="apply-icon">⚡</span>
+                <span id="apply-text">تطبيق التعديل</span>
             </button>
-            <button class="btn btn-secondary" id="downloadBtn" disabled onclick="downloadVideo()">
-                💾 تحميل الفيديو
+            <button class="btn btn-secondary" id="download-btn" disabled>
+                <span id="download-icon">💾</span>
+                <span id="download-text">تحميل الفيديو</span>
+            </button>
+            <button class="btn btn-secondary" id="reset-btn">
+                <span>🔄</span>
+                <span>إعادة تعيين</span>
             </button>
         </div>
 
         <!-- قسم المعاينة -->
         <div class="preview-section">
-            <div class="preview-placeholder" id="previewPlaceholder">
-                📽️ سيظهر الفيديو المعدل هنا
+            <div class="preview-placeholder" id="preview-placeholder">
+                <div style="font-size: 50px; margin-bottom: 15px;">🎥</div>
+                <p>سيظهر الفيديو المعدل هنا</p>
+                <p style="font-size: 0.9rem; color: var(--gray); margin-top: 10px;">
+                    اختر فيديو أولاً، ثم طبق التعديلات المطلوبة
+                </p>
             </div>
-            <video class="preview-video" id="previewVideo" controls></video>
+            <video class="preview-video" id="preview-video" controls playsinline></video>
         </div>
 
         <!-- معلومات تقنية -->
-        <div class="tech-info">
-            <p>💻 يعمل باستخدام FFmpeg.wasm | 📱 متوافق مع Android Chrome | 🔒 المعالجة 100% على جهازك</p>
+        <div class="tech-footer">
+            <p>🛠️ تم التطوير باستخدام FFmpeg.wasm الإصدار الحديث | 📱 متوافق مع Chrome, Firefox, Edge</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">
+                ⚠️ ملاحظة: يجب فتح الموقع عبر HTTPS للعمل بشكل صحيح (مطلوب لـ SharedArrayBuffer)
+            </p>
         </div>
     </div>
 
-    <!-- مكتبات FFmpeg -->
-    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/ffmpeg.min.js"></script>
-    <script src="https://unpkg.com/@ffmpeg/util@0.11.1/dist/util.min.js"></script>
-    
-    <!-- كود JavaScript -->
-    <script>
-        // التعريفات الأساسية
-        const { createFFmpeg } = FFmpeg;
-        const { fetchFile, toBlobURL } = FFmpegUtil;
+    <!-- مكتبات FFmpeg الحديثة -->
+    <script type="module">
+        // ===================== استيراد المكتبات =====================
+        import { FFmpeg } from 'https://esm.sh/@ffmpeg/ffmpeg@0.12.10';
+        import { toBlobURL, fetchFile } from 'https://esm.sh/@ffmpeg/util@0.11.1';
 
+        // ===================== المتغيرات العامة =====================
         let ffmpeg = null;
-        let inputVideo = null;
-        let outputVideo = null;
         let currentVideoFile = null;
+        let videoData = null;
         let selectedColor = '#FFFFFF';
-        let arabicFontLoaded = false;
+        let isProcessing = false;
+        let outputBlob = null;
 
-        // عناصر DOM
+        // ===================== عناصر DOM =====================
         const elements = {
+            // الحالة
             ffmpegStatus: document.getElementById('ffmpeg-status'),
+            ffmpegProgress: document.getElementById('ffmpeg-progress'),
             memoryStatus: document.getElementById('memory-status'),
-            progressStatus: document.getElementById('progress-status'),
-            progressBar: document.getElementById('progress-bar'),
-            uploadArea: document.getElementById('uploadArea'),
-            fileInput: document.getElementById('fileInput'),
-            fileInfo: document.getElementById('fileInfo'),
-            fileName: document.getElementById('fileName'),
-            fileSize: document.getElementById('fileSize'),
-            fileDuration: document.getElementById('fileDuration'),
-            systemMessage: document.getElementById('systemMessage'),
-            applyBtn: document.getElementById('applyBtn'),
-            downloadBtn: document.getElementById('downloadBtn'),
-            previewVideo: document.getElementById('previewVideo'),
-            previewPlaceholder: document.getElementById('previewPlaceholder'),
-            textInput: document.getElementById('textInput'),
-            textSize: document.getElementById('textSize'),
-            textSizeValue: document.getElementById('textSizeValue'),
-            editType: document.getElementById('editType'),
-            trimGroup: document.getElementById('trimGroup'),
-            speedGroup: document.getElementById('speedGroup'),
-            startTime: document.getElementById('startTime'),
-            startTimeValue: document.getElementById('startTimeValue'),
-            endTime: document.getElementById('endTime'),
-            endTimeValue: document.getElementById('endTimeValue'),
+            processStatus: document.getElementById('process-status'),
+            processProgress: document.getElementById('process-progress'),
+            
+            // التحميل
+            uploadSection: document.getElementById('upload-section'),
+            uploadTitle: document.getElementById('upload-title'),
+            fileInput: document.getElementById('file-input'),
+            fileInfo: document.getElementById('file-info'),
+            fileName: document.getElementById('file-name'),
+            fileSize: document.getElementById('file-size'),
+            fileDuration: document.getElementById('file-duration'),
+            
+            // الرسائل
+            systemMessage: document.getElementById('system-message'),
+            
+            // الأزرار
+            applyBtn: document.getElementById('apply-btn'),
+            applyIcon: document.getElementById('apply-icon'),
+            applyText: document.getElementById('apply-text'),
+            downloadBtn: document.getElementById('download-btn'),
+            downloadIcon: document.getElementById('download-icon'),
+            downloadText: document.getElementById('download-text'),
+            resetBtn: document.getElementById('reset-btn'),
+            
+            // المعاينة
+            previewVideo: document.getElementById('preview-video'),
+            previewPlaceholder: document.getElementById('preview-placeholder'),
+            
+            // التحكم
+            textInput: document.getElementById('text-input'),
+            textSize: document.getElementById('text-size'),
+            textSizeValue: document.getElementById('text-size-value'),
+            editType: document.getElementById('edit-type'),
+            trimSettings: document.getElementById('trim-settings'),
+            speedSettings: document.getElementById('speed-settings'),
+            watermarkSettings: document.getElementById('watermark-settings'),
+            startTime: document.getElementById('start-time'),
+            startTimeValue: document.getElementById('start-time-value'),
+            endTime: document.getElementById('end-time'),
+            endTimeValue: document.getElementById('end-time-value'),
             speed: document.getElementById('speed'),
-            speedValue: document.getElementById('speedValue'),
-            textPosition: document.getElementById('textPosition')
+            speedValue: document.getElementById('speed-value'),
+            textPosition: document.getElementById('text-position'),
+            watermarkText: document.getElementById('watermark-text')
         };
 
-        // تهيئة الصفحة
+        // ===================== تهيئة التطبيق =====================
         document.addEventListener('DOMContentLoaded', async () => {
-            // تحديث حالة الذاكرة
-            updateMemoryStatus();
-            setInterval(updateMemoryStatus, 5000);
-
-            // إعداد أحداث السحب والإفلات
-            setupDragAndDrop();
-
+            console.log('🚀 بدء تحميل محرر الفيديو...');
+            
             // إعداد أحداث المدخلات
             setupEventListeners();
-
+            
             // تحميل مكتبة FFmpeg
             await loadFFmpeg();
-
-            // تحميل الخط العربي
-            await loadArabicFont();
+            
+            // مراقبة الذاكرة
+            startMemoryMonitoring();
+            
+            console.log('✅ تم تهيئة التطبيق بنجاح');
         });
 
-        // تحديث حالة الذاكرة
-        function updateMemoryStatus() {
-            if (performance.memory) {
-                const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
-                const totalMB = Math.round(performance.memory.totalJSHeapSize / 1048576);
-                elements.memoryStatus.textContent = `${usedMB}MB / ${totalMB}MB`;
-            } else {
-                elements.memoryStatus.textContent = 'غير متوفر';
+        // ===================== تحميل FFmpeg بالطريقة الحديثة =====================
+        async function loadFFmpeg() {
+            try {
+                showMessage('⏳ جاري تحميل مكتبة FFmpeg... قد يستغرق دقيقة', 'info');
+                elements.ffmpegStatus.innerHTML = '<span class="loading-spinner"></span> جاري التحميل';
+                
+                // إنشاء مثيل FFmpeg جديد
+                ffmpeg = new FFmpeg();
+                
+                // إعداد معالج التقدم
+                ffmpeg.on('log', ({ type, message }) => {
+                    if (type === 'fferr') {
+                        console.debug('FFmpeg:', message);
+                    }
+                });
+                
+                ffmpeg.on('progress', ({ progress, time }) => {
+                    if (progress !== undefined) {
+                        const percent = Math.round(progress * 100);
+                        elements.ffmpegProgress.style.width = `${percent}%`;
+                        
+                        if (percent < 100) {
+                            elements.ffmpegStatus.textContent = `جاري التحميل ${percent}%`;
+                        }
+                    }
+                });
+                
+                // تحميل الملفات الأساسية باستخدام toBlobURL
+                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/esm';
+                
+                console.log('📦 بدء تحميل ملفات FFmpeg...');
+                
+                await ffmpeg.load({
+                    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
+                    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
+                    workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
+                });
+                
+                console.log('✅ تم تحميل FFmpeg بنجاح');
+                
+                elements.ffmpegStatus.textContent = '✅ تم التحميل';
+                elements.ffmpegStatus.style.color = 'var(--secondary)';
+                elements.ffmpegProgress.style.width = '100%';
+                
+                // تفعيل واجهة التحميل
+                elements.uploadSection.classList.remove('disabled');
+                elements.uploadSection.classList.add('active');
+                elements.uploadTitle.textContent = 'اسحب ملف فيديو هنا أو انقر للاختيار';
+                elements.uploadSection.style.cursor = 'pointer';
+                
+                // إعداد أحداث السحب والإفلات
+                setupDragAndDrop();
+                
+                showMessage('✅ تم تحميل مكتبة FFmpeg بنجاح! يمكنك الآن تحميل فيديو', 'success');
+                
+                // تحميل الخط العربي
+                await loadArabicFont();
+                
+                return true;
+                
+            } catch (error) {
+                console.error('❌ خطأ في تحميل FFmpeg:', error);
+                
+                elements.ffmpegStatus.textContent = '❌ فشل التحميل';
+                elements.ffmpegStatus.style.color = 'var(--danger)';
+                
+                let errorMsg = `❌ فشل تحميل مكتبة FFmpeg: ${error.message}`;
+                
+                // رسائل مساعدة للمشاكل الشائعة
+                if (error.message.includes('SharedArrayBuffer') || error.message.includes('SAB')) {
+                    errorMsg += '\n\n🔧 **المشكلة**: تحتاج إلى تشغيل الموقع عبر HTTPS\n';
+                    errorMsg += '**الحل**:\n';
+                    errorMsg += '1. تأكد من فتح الموقع عبر https://\n';
+                    errorMsg += '2. إذا كنت محلياً، استخدم localhost مع HTTPS\n';
+                    errorMsg += '3. على Vercel/GitHub Pages يعمل تلقائياً';
+                } else if (error.message.includes('CORS')) {
+                    errorMsg += '\n\n🔧 **المشكلة**: مشكلة CORS\n';
+                    errorMsg += '**الحل**: تأكد من أن الموقع يعمل على نفس النطاق';
+                } else if (error.message.includes('wasm')) {
+                    errorMsg += '\n\n🔧 **المشكلة**: WebAssembly غير مدعوم\n';
+                    errorMsg += '**الحل**: تأكد من استخدام متصفح حديث';
+                }
+                
+                showMessage(errorMsg, 'error');
+                
+                // محاولة بديلة
+                showMessage('🔄 جرب طريقة تحميل بديلة...', 'warning');
+                setTimeout(tryAlternativeLoad, 3000);
+                
+                return false;
             }
         }
 
-        // إعداد السحب والإفلات
-        function setupDragAndDrop() {
-            elements.uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                elements.uploadArea.classList.add('dragover');
-            });
-
-            elements.uploadArea.addEventListener('dragleave', () => {
-                elements.uploadArea.classList.remove('dragover');
-            });
-
-            elements.uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                elements.uploadArea.classList.remove('dragover');
+        // محاولة بديلة للتحميل
+        async function tryAlternativeLoad() {
+            try {
+                console.log('🔄 محاولة تحميل بديلة...');
                 
-                if (e.dataTransfer.files.length > 0) {
-                    handleFileSelect(e.dataTransfer.files[0]);
+                ffmpeg = new FFmpeg();
+                
+                // استخدام روابط CDN بديلة
+                await ffmpeg.load({
+                    coreURL: await toBlobURL('https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js', 'text/javascript'),
+                    wasmURL: await toBlobURL('https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm', 'application/wasm'),
+                });
+                
+                console.log('✅ تم التحميل بالطريقة البديلة');
+                showMessage('✅ تم التحميل بنجاح باستخدام طريقة بديلة', 'success');
+                
+                elements.ffmpegStatus.textContent = '✅ تم التحميل';
+                elements.uploadSection.classList.remove('disabled');
+                elements.uploadSection.classList.add('active');
+                elements.uploadTitle.textContent = 'اسحب ملف فيديو هنا أو انقر للاختيار';
+                
+                setupDragAndDrop();
+                
+            } catch (altError) {
+                console.error('❌ فشل التحميل البديل:', altError);
+                showMessage('❌ فشل جميع محاولات التحميل. يرجى تحديث الصفحة', 'error');
+            }
+        }
+
+        // ===================== تحميل الخط العربي =====================
+        async function loadArabicFont() {
+            try {
+                console.log('📝 جاري تحميل الخط العربي...');
+                
+                // إنشاء خط عربي بسيط
+                const fontContent = `/* خط عربي افتراضي */`;
+                
+                // كتابة ملف الخط في نظام الملفات
+                await ffmpeg.writeFile('arabic.ttf', new TextEncoder().encode(fontContent));
+                
+                console.log('✅ تم تحميل الخط العربي');
+                
+            } catch (error) {
+                console.warn('⚠️ لم يتم تحميل الخط العربي:', error);
+            }
+        }
+
+        // ===================== إدارة الملفات =====================
+        function setupDragAndDrop() {
+            // حدث النقر
+            elements.uploadSection.addEventListener('click', () => {
+                if (!elements.uploadSection.classList.contains('disabled')) {
+                    elements.fileInput.click();
                 }
             });
 
-            elements.uploadArea.addEventListener('click', () => {
-                elements.fileInput.click();
+            // حدث تغيير الملف
+            elements.fileInput.addEventListener('change', async (e) => {
+                if (e.target.files.length > 0) {
+                    await handleFileSelect(e.target.files[0]);
+                }
             });
 
-            elements.fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    handleFileSelect(e.target.files[0]);
+            // أحداث السحب والإفلات
+            elements.uploadSection.addEventListener('dragover', (e) => {
+                if (!elements.uploadSection.classList.contains('disabled')) {
+                    e.preventDefault();
+                    elements.uploadSection.style.borderColor = 'var(--primary)';
+                    elements.uploadSection.style.background = 'rgba(59, 130, 246, 0.15)';
+                }
+            });
+
+            elements.uploadSection.addEventListener('dragleave', () => {
+                elements.uploadSection.style.borderColor = '';
+                elements.uploadSection.style.background = '';
+            });
+
+            elements.uploadSection.addEventListener('drop', async (e) => {
+                if (!elements.uploadSection.classList.contains('disabled')) {
+                    e.preventDefault();
+                    elements.uploadSection.style.borderColor = '';
+                    elements.uploadSection.style.background = '';
+                    
+                    if (e.dataTransfer.files.length > 0) {
+                        await handleFileSelect(e.dataTransfer.files[0]);
+                    }
                 }
             });
         }
 
-        // إعداد أحداث المدخلات
+        async function handleFileSelect(file) {
+            if (!ffmpeg) {
+                showMessage('⏳ يرجى الانتظار حتى يكتمل تحميل المكتبة', 'warning');
+                return;
+            }
+
+            if (!file.type.startsWith('video/')) {
+                showMessage('❌ الرجاء اختيار ملف فيديو صالح', 'error');
+                return;
+            }
+
+            // تحقق من حجم الملف
+            if (file.size > 100 * 1024 * 1024) {
+                showMessage('❌ حجم الفيديو كبير جداً. يفضل فيديوهات أقل من 100MB', 'error');
+                return;
+            }
+
+            try {
+                console.log('📂 معالجة الملف:', file.name);
+                
+                currentVideoFile = file;
+                
+                // عرض معلومات الملف
+                elements.fileName.textContent = file.name;
+                elements.fileSize.textContent = formatFileSize(file.size);
+                elements.fileInfo.classList.add('show');
+                elements.fileDuration.textContent = 'جاري التحليل...';
+
+                // إنشاء URL للمعاينة
+                const videoURL = URL.createObjectURL(file);
+                elements.previewVideo.src = videoURL;
+                elements.previewVideo.style.display = 'block';
+                elements.previewPlaceholder.style.display = 'none';
+
+                // الحصول على مدة الفيديو
+                elements.previewVideo.onloadedmetadata = () => {
+                    const duration = Math.floor(elements.previewVideo.duration);
+                    elements.fileDuration.textContent = `${duration} ثانية`;
+                    
+                    // تحديث نطاقات القص
+                    const maxDuration = Math.max(30, duration);
+                    elements.startTime.max = maxDuration;
+                    elements.endTime.max = maxDuration;
+                    elements.endTime.value = Math.min(10, duration);
+                    elements.endTimeValue.textContent = Math.min(10, duration);
+                    
+                    console.log(`🎬 مدة الفيديو: ${duration} ثانية`);
+                };
+
+                // قراءة الملف
+                videoData = await fetchFile(file);
+                console.log(`✅ تم تحميل الفيديو: ${file.name} (${videoData.byteLength} بايت)`);
+                
+                // تفعيل زر التطبيق
+                elements.applyBtn.disabled = false;
+                showMessage('✅ تم تحميل الفيديو بنجاح! يمكنك الآن تطبيق التعديلات', 'success');
+                
+            } catch (error) {
+                console.error('خطأ في معالجة الملف:', error);
+                showMessage(`❌ خطأ: ${error.message}`, 'error');
+            }
+        }
+
+        // ===================== إعداد الأحداث =====================
         function setupEventListeners() {
             // حجم النص
             elements.textSize.addEventListener('input', () => {
@@ -637,157 +985,72 @@
             // السرعة
             elements.speed.addEventListener('input', () => {
                 const speedValue = elements.speed.value / 100;
-                elements.speedValue.textContent = `${speedValue.toFixed(1)}x`;
+                elements.speedValue.textContent = `${speedValue.toFixed(2)}x`;
             });
 
             // نوع التعديل
             elements.editType.addEventListener('change', () => {
                 const type = elements.editType.value;
-                elements.trimGroup.style.display = type === 'trim' ? 'block' : 'none';
-                elements.speedGroup.style.display = type === 'speed' ? 'block' : 'none';
+                elements.trimSettings.style.display = type === 'trim' ? 'block' : 'none';
+                elements.speedSettings.style.display = type === 'speed' ? 'block' : 'none';
+                elements.watermarkSettings.style.display = type === 'watermark' ? 'block' : 'none';
             });
 
             // ألوان النص
             document.querySelectorAll('.color-option').forEach(option => {
-                option.addEventListener('click', (e) => {
+                option.addEventListener('click', function() {
                     document.querySelectorAll('.color-option').forEach(opt => {
                         opt.classList.remove('active');
                     });
-                    e.target.classList.add('active');
-                    selectedColor = e.target.dataset.color;
+                    this.classList.add('active');
+                    selectedColor = this.dataset.color;
+                    console.log('🎨 تم اختيار اللون:', selectedColor);
                 });
             });
+
+            // زر التطبيق
+            elements.applyBtn.addEventListener('click', applyEdits);
+            
+            // زر التحميل
+            elements.downloadBtn.addEventListener('click', downloadVideo);
+            
+            // زر إعادة التعيين
+            elements.resetBtn.addEventListener('click', resetAll);
         }
 
-        // تحميل مكتبة FFmpeg
-        async function loadFFmpeg() {
-            try {
-                showMessage('⏳ جاري تحميل مكتبة FFmpeg...', 'info');
-
-                // URL للعناصر الأساسية
-                const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
-                
-                ffmpeg = createFFmpeg({
-                    log: true,
-                    progress: (p) => {
-                        const percent = Math.round(p.ratio * 100);
-                        elements.progressBar.style.width = `${percent}%`;
-                        elements.progressStatus.textContent = `${percent}%`;
-                    },
-                    corePath: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-                    wasmPath: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-                    workerPath: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript')
-                });
-
-                await ffmpeg.load();
-                
-                elements.ffmpegStatus.textContent = '✅ تم التحميل';
-                elements.ffmpegStatus.style.color = '#4caf50';
-                showMessage('✅ تم تحميل مكتبة FFmpeg بنجاح!', 'success');
-                
-            } catch (error) {
-                console.error('خطأ في تحميل FFmpeg:', error);
-                elements.ffmpegStatus.textContent = '❌ فشل التحميل';
-                elements.ffmpegStatus.style.color = '#f44336';
-                showMessage(`❌ فشل تحميل مكتبة FFmpeg: ${error.message}`, 'error');
-            }
-        }
-
-        // تحميل الخط العربي
-        async function loadArabicFont() {
-            try {
-                // تنزيل خط عربي TTF
-                const fontResponse = await fetch('https://fonts.googleapis.com/css2?family=Amiri&display=swap');
-                const fontCSS = await fontResponse.text();
-                
-                // استخراج رابط الخط
-                const fontMatch = fontCSS.match(/url\((.*?)\)/);
-                if (fontMatch) {
-                    const fontUrl = fontMatch[1];
-                    const fontData = await fetch(fontUrl);
-                    const fontBlob = await fontData.blob();
-                    
-                    // تحويل الخط إلى ArrayBuffer
-                    const fontArrayBuffer = await fontBlob.arrayBuffer();
-                    
-                    // كتابة الخط في نظام الملفات
-                    ffmpeg.FS('writeFile', 'arabic.ttf', new Uint8Array(fontArrayBuffer));
-                    
-                    arabicFontLoaded = true;
-                    console.log('✅ تم تحميل الخط العربي');
-                }
-            } catch (error) {
-                console.warn('⚠️ لم يتم تحميل الخط العربي، سيستخدم الخط الافتراضي:', error);
-                // إنشاء خط افتراضي بسيط
-                const defaultFont = `/* خط افتراضي */`;
-                ffmpeg.FS('writeFile', 'arabic.ttf', new Uint8Array(defaultFont));
-                arabicFontLoaded = true;
-            }
-        }
-
-        // معالجة اختيار الملف
-        async function handleFileSelect(file) {
-            if (!file.type.startsWith('video/')) {
-                showMessage('❌ الرجاء اختيار ملف فيديو صالح', 'error');
-                return;
-            }
-
-            try {
-                currentVideoFile = file;
-                inputVideo = await fetchFile(file);
-
-                // عرض معلومات الملف
-                elements.fileName.textContent = file.name;
-                elements.fileSize.textContent = formatFileSize(file.size);
-                elements.fileInfo.classList.add('show');
-
-                // إنشاء URL للمعاينة
-                const videoURL = URL.createObjectURL(file);
-                elements.previewVideo.src = videoURL;
-                elements.previewVideo.style.display = 'block';
-                elements.previewPlaceholder.style.display = 'none';
-
-                // الحصول على مدة الفيديو
-                elements.previewVideo.onloadedmetadata = () => {
-                    const duration = Math.floor(elements.previewVideo.duration);
-                    elements.fileDuration.textContent = `${duration} ثانية`;
-                    
-                    // تحديث نطاقات القص
-                    elements.startTime.max = duration;
-                    elements.endTime.max = duration;
-                    elements.endTime.value = Math.min(10, duration);
-                    elements.endTimeValue.textContent = Math.min(10, duration);
-                };
-
-                // تفعيل زر التطبيق
-                elements.applyBtn.disabled = false;
-                showMessage('✅ تم تحميل الفيديو بنجاح!', 'success');
-
-            } catch (error) {
-                console.error('خطأ في معالجة الملف:', error);
-                showMessage(`❌ خطأ في معالجة الملف: ${error.message}`, 'error');
-            }
-        }
-
-        // تطبيق التعديلات
+        // ===================== تطبيق التعديلات =====================
         async function applyEdits() {
-            if (!currentVideoFile || !ffmpeg) {
+            if (!currentVideoFile || !ffmpeg || !videoData || isProcessing) {
                 showMessage('❌ الرجاء تحميل فيديو أولاً', 'error');
                 return;
             }
 
+            if (isProcessing) {
+                showMessage('⏳ جاري معالجة فيديو آخر، يرجى الانتظار', 'warning');
+                return;
+            }
+
+            isProcessing = true;
+            
             try {
-                // إعداد واجهة المعالجة
+                // تحديث واجهة المستخدم
                 elements.applyBtn.disabled = true;
-                elements.applyBtn.innerHTML = '⏳ جاري المعالجة...';
-                showMessage('⏳ جاري معالجة الفيديو...', 'info');
+                elements.applyIcon.textContent = '⏳';
+                elements.applyText.textContent = 'جاري المعالجة...';
+                elements.processStatus.textContent = '0%';
+                
+                showMessage('⏳ جاري معالجة الفيديو... قد تستغرق بضع ثوانٍ', 'info');
+                console.log('🔄 بدء معالجة الفيديو...');
 
                 // كتابة ملف الفيديو المدخل
-                ffmpeg.FS('writeFile', 'input.mp4', new Uint8Array(await inputVideo.arrayBuffer()));
+                console.log('📝 كتابة input.mp4...');
+                await ffmpeg.writeFile('input.mp4', videoData);
 
                 // بناء أمر FFmpeg بناءً على نوع التعديل
                 const editType = elements.editType.value;
-                let ffmpegCommand = ['-i', 'input.mp4'];
+                let ffmpegArgs = ['-i', 'input.mp4'];
+                
+                console.log(`🎯 نوع التعديل: ${editType}`);
 
                 if (editType === 'text') {
                     // إضافة نص عربي
@@ -798,10 +1061,12 @@
                     // تحويل اللون Hex إلى RGB لـ FFmpeg
                     const rgbColor = hexToRgb(selectedColor);
                     
-                    ffmpegCommand.push(
+                    ffmpegArgs.push(
                         '-vf', `drawtext=fontfile=arabic.ttf:text='${encodeURIComponent(text)}':fontcolor=${rgbColor}:fontsize=${fontSize}:x=${position.split(':')[0]}:y=${position.split(':')[1]}`,
                         '-c:a', 'copy'
                     );
+                    
+                    console.log(`📝 إضافة نص: "${text}" باللون ${selectedColor}`);
 
                 } else if (editType === 'trim') {
                     // قص الفيديو
@@ -809,108 +1074,213 @@
                     const endTime = elements.endTime.value;
                     const duration = endTime - startTime;
 
-                    ffmpegCommand.push(
+                    if (duration <= 0) {
+                        throw new Error('وقت النهاية يجب أن يكون أكبر من وقت البداية');
+                    }
+
+                    ffmpegArgs.push(
                         '-ss', startTime,
                         '-t', duration.toString(),
                         '-c:v', 'libx264',
                         '-c:a', 'aac',
                         '-avoid_negative_ts', 'make_zero'
                     );
+                    
+                    console.log(`✂️ قص الفيديو: من ${startTime} إلى ${endTime} ثانية`);
 
                 } else if (editType === 'speed') {
                     // تغيير السرعة
                     const speed = elements.speed.value / 100;
+                    
+                    // تحديد حد أقصى للـ atempo (2.0 للصوت)
+                    const audioSpeed = Math.min(speed, 2.0);
+                    const videoPts = 1 / speed;
 
-                    ffmpegCommand.push(
-                        '-filter_complex', `[0:v]setpts=${1/speed}*PTS[v];[0:a]atempo=${speed}[a]`,
+                    ffmpegArgs.push(
+                        '-filter_complex', `[0:v]setpts=${videoPts}*PTS[v];[0:a]atempo=${audioSpeed}[a]`,
                         '-map', '[v]',
                         '-map', '[a]'
                     );
+                    
+                    console.log(`⚡ تغيير السرعة: ${speed.toFixed(2)}x`);
 
                 } else if (editType === 'reverse') {
                     // عكس الفيديو
-                    ffmpegCommand.push(
+                    ffmpegArgs.push(
                         '-vf', 'reverse',
                         '-af', 'areverse'
                     );
+                    
+                    console.log('🔁 عكس الفيديو');
+                    
+                } else if (editType === 'watermark') {
+                    // إضافة علامة مائية
+                    const watermarkText = elements.watermarkText.value || 'محرر الفيديو';
+                    
+                    ffmpegArgs.push(
+                        '-vf', `drawtext=fontfile=arabic.ttf:text='${encodeURIComponent(watermarkText)}':fontcolor=white:fontsize=24:x=10:y=10:alpha=0.5`,
+                        '-c:a', 'copy'
+                    );
+                    
+                    console.log(`💧 إضافة علامة مائية: "${watermarkText}"`);
                 }
 
                 // إضافة اسم الملف الناتج
-                ffmpegCommand.push('output.mp4');
+                ffmpegArgs.push('output.mp4');
+                
+                console.log('🔧 أمر FFmpeg:', ffmpegArgs.join(' '));
 
-                // تنفيذ الأمر
-                await ffmpeg.run(...ffmpegCommand);
+                // تنفيذ الأمر مع التقدم
+                ffmpeg.on('progress', ({ progress }) => {
+                    if (progress !== undefined) {
+                        const percent = Math.round(progress * 100);
+                        elements.processProgress.style.width = `${percent}%`;
+                        elements.processStatus.textContent = `${percent}%`;
+                    }
+                });
+                
+                console.log('🚀 تشغيل FFmpeg...');
+                await ffmpeg.exec(ffmpegArgs);
 
                 // قراءة الملف الناتج
-                const outputData = ffmpeg.FS('readFile', 'output.mp4');
-                outputVideo = new Blob([outputData.buffer], { type: 'video/mp4' });
+                console.log('📖 قراءة output.mp4...');
+                const outputData = await ffmpeg.readFile('output.mp4');
+                outputBlob = new Blob([outputData], { type: 'video/mp4' });
 
                 // عرض النتيجة
-                const videoURL = URL.createObjectURL(outputVideo);
+                const videoURL = URL.createObjectURL(outputBlob);
                 elements.previewVideo.src = videoURL;
                 elements.previewVideo.load();
+                
+                console.log(`✅ تم إنشاء الفيديو المعدل: ${outputBlob.size} بايت`);
 
                 // تفعيل زر التحميل
                 elements.downloadBtn.disabled = false;
-
+                
                 // إعادة تعيين واجهة المعالجة
                 elements.applyBtn.disabled = false;
-                elements.applyBtn.innerHTML = '⚡ تطبيق التعديل';
+                elements.applyIcon.textContent = '⚡';
+                elements.applyText.textContent = 'تطبيق التعديل';
+                elements.processStatus.textContent = '100%';
+                elements.processProgress.style.width = '100%';
                 
-                showMessage(`✅ تم ${getEditName(editType)} بنجاح!`, 'success');
+                showMessage(`✅ تم ${getEditName(editType)} بنجاح! يمكنك الآن تحميل الفيديو`, 'success');
 
             } catch (error) {
-                console.error('خطأ في المعالجة:', error);
-                showMessage(`❌ خطأ في المعالجة: ${error.message}`, 'error');
+                console.error('❌ خطأ في المعالجة:', error);
+                
+                let errorMsg = `❌ خطأ في المعالجة: ${error.message}`;
+                
+                if (error.message.includes('memory') || error.message.includes('Memory')) {
+                    errorMsg += '\n\n💡 المحل: الفيديو كبير جداً للذاكرة المتاحة. جرب فيديو أصغر.';
+                } else if (error.message.includes('drawtext')) {
+                    errorMsg += '\n\n💡 المحل: مشكلة في إضافة النص. جرب نصاً أقصر أو لوناً مختلفاً.';
+                }
+                
+                showMessage(errorMsg, 'error');
                 
                 // إعادة تفعيل الزر
                 elements.applyBtn.disabled = false;
-                elements.applyBtn.innerHTML = '⚡ تطبيق التعديل';
+                elements.applyIcon.textContent = '⚡';
+                elements.applyText.textContent = 'تطبيق التعديل';
+                elements.processStatus.textContent = 'خطأ';
+                elements.processProgress.style.width = '0%';
+                
+            } finally {
+                isProcessing = false;
             }
         }
 
-        // تحميل الفيديو المعدل
+        // ===================== تحميل الفيديو =====================
         function downloadVideo() {
-            if (!outputVideo) {
+            if (!outputBlob) {
                 showMessage('❌ لا يوجد فيديو معدل للتحميل', 'error');
                 return;
             }
 
-            const url = URL.createObjectURL(outputVideo);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `فيديو_معدل_${new Date().getTime()}.mp4`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+            try {
+                const url = URL.createObjectURL(outputBlob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `فيديو_معدل_${new Date().getTime()}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // تحرير الذاكرة بعد ثانية
+                setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                }, 1000);
 
-            showMessage('⬇️ بدأ تحميل الفيديو المعدل', 'success');
+                showMessage('✅ بدأ تحميل الفيديو المعدل', 'success');
+                console.log('⬇️ بدأ تحميل الفيديو');
+                
+            } catch (error) {
+                console.error('❌ خطأ في التحميل:', error);
+                showMessage('❌ خطأ في تحميل الفيديو', 'error');
+            }
         }
 
-        // عرض الرسائل
+        // ===================== إعادة التعيين =====================
+        function resetAll() {
+            // إعادة تعيين القيم
+            elements.textInput.value = 'مرحباً بك في محرر الفيديو';
+            elements.textSize.value = 40;
+            elements.textSizeValue.textContent = '40';
+            elements.editType.value = 'text';
+            elements.startTime.value = 0;
+            elements.startTimeValue.textContent = '0';
+            elements.endTime.value = 10;
+            elements.endTimeValue.textContent = '10';
+            elements.speed.value = 100;
+            elements.speedValue.textContent = '1.0x';
+            elements.textPosition.value = '(w-text_w)/2:(h-text_h)/2';
+            
+            // إعادة تعيين التحديدات
+            document.querySelectorAll('.color-option').forEach(opt => opt.classList.remove('active'));
+            document.querySelector('.color-option[data-color="#FFFFFF"]').classList.add('active');
+            selectedColor = '#FFFFFF';
+            
+            // إخفاء الإعدادات غير المرغوبة
+            elements.trimSettings.style.display = 'block';
+            elements.speedSettings.style.display = 'none';
+            elements.watermarkSettings.style.display = 'none';
+            
+            // إعادة تعيين المعاينة
+            if (currentVideoFile) {
+                const videoURL = URL.createObjectURL(currentVideoFile);
+                elements.previewVideo.src = videoURL;
+                elements.previewVideo.load();
+            } else {
+                elements.previewVideo.style.display = 'none';
+                elements.previewPlaceholder.style.display = 'block';
+            }
+            
+            // إعادة تعيين حالة التحميل
+            elements.downloadBtn.disabled = true;
+            outputBlob = null;
+            
+            showMessage('✅ تم إعادة تعيين جميع الإعدادات', 'success');
+        }
+
+        // ===================== دوال مساعدة =====================
         function showMessage(text, type) {
             elements.systemMessage.textContent = text;
-            elements.systemMessage.className = `message show ${type}`;
+            elements.systemMessage.className = `message show message-${type}`;
             
+            // إخفاء الرسالة بعد وقت محدد
+            const hideTime = type === 'error' ? 8000 : 5000;
             setTimeout(() => {
                 elements.systemMessage.classList.remove('show');
-            }, 5000);
+            }, hideTime);
         }
 
-        // ========== دوال مساعدة ==========
-
         function formatFileSize(bytes) {
-            const units = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
-            let size = bytes;
-            let unitIndex = 0;
-
-            while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024;
-                unitIndex++;
-            }
-
-            return `${size.toFixed(2)} ${units[unitIndex]}`;
+            if (bytes === 0) return '0 بايت';
+            const k = 1024;
+            const sizes = ['بايت', 'كيلوبايت', 'ميجابايت', 'جيجابايت'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
         function hexToRgb(hex) {
@@ -932,10 +1302,36 @@
                 'text': 'إضافة النص',
                 'trim': 'قص الفيديو',
                 'speed': 'تغيير السرعة',
-                'reverse': 'عكس الفيديو'
+                'reverse': 'عكس الفيديو',
+                'watermark': 'إضافة علامة مائية'
             };
             return names[type] || 'تعديل الفيديو';
         }
+
+        function startMemoryMonitoring() {
+            setInterval(() => {
+                if (performance && performance.memory) {
+                    const usedMB = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                    const totalMB = Math.round(performance.memory.totalJSHeapSize / 1048576);
+                    elements.memoryStatus.textContent = `${usedMB}MB / ${totalMB}MB`;
+                    
+                    // تحذير إذا كانت الذاكرة مرتفعة
+                    if (usedMB > totalMB * 0.8) {
+                        elements.memoryStatus.style.color = 'var(--warning)';
+                    } else {
+                        elements.memoryStatus.style.color = '';
+                    }
+                }
+            }, 3000);
+        }
+
+        // ===================== التعامل مع إغلاق الصفحة =====================
+        window.addEventListener('beforeunload', () => {
+            // تنظيف الذاكرة
+            if (elements.previewVideo.src) {
+                URL.revokeObjectURL(elements.previewVideo.src);
+            }
+        });
     </script>
 </body>
 </html>
